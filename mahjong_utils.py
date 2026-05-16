@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+from pathlib import Path
 import time
 import warnings
 import sys
@@ -60,20 +61,21 @@ def get_rank(player_list, target_account_id):
     sorted_ids = [player['accountId'] for player in sorted_list]
     return sorted_ids.index(target_account_id) + 1
 
+FONT_PATH = Path(__file__).parent / "NotoSansSC-Regular.otf"
+
 def _setup_cjk_font():
-    try:
-        from mplfonts import use_font
-        use_font('Noto Sans CJK SC')
-    except Exception:
+    if FONT_PATH.exists():
+        fm.fontManager.addfont(str(FONT_PATH))
+        font_prop = fm.FontProperties(fname=str(FONT_PATH))
+        font_name = font_prop.get_name()
+        plt.rcParams['font.sans-serif'] = [font_name]
+    else:
         try:
             system_fonts = [f.name for f in fm.fontManager.ttflist]
             font_candidates = [
                 'Microsoft YaHei', 'SimHei', 'WenQuanYi Micro Hei',
-                'WenQuanYi Zen Hei', 'Noto Sans CJK SC', 'Noto Sans SC',
-                'Noto Sans CJK JP', 'Noto Sans JP',
-                'PingFang SC', 'Hiragino Sans GB',
-                'Meiryo', 'MS Gothic',
-                'DejaVu Sans'
+                'Noto Sans CJK SC', 'Noto Sans SC', 'Noto Sans CJK JP',
+                'PingFang SC', 'Meiryo', 'DejaVu Sans'
             ]
             for font in font_candidates:
                 if font in system_fonts:

@@ -4,4 +4,3 @@ jinja2
 requests
 matplotlib
 numpy
-mplfonts
