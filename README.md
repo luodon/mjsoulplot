@@ -186,7 +186,7 @@ git push -u origin main
    - **Region**: 选择离你最近的区域
    - **Branch**: `main`
    - **Runtime**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
+   - **Build Command**: `bash render-build.sh`
    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
    - **Plan**: 选择 **Free**
 5. 点击 **"Create Web Service"**
