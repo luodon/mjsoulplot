@@ -61,12 +61,20 @@ def get_rank(player_list, target_account_id):
     return sorted_ids.index(target_account_id) + 1
 
 def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right: int = 10000, top: int = 10000):
-    # 智能查找可用的中文字体
-    def find_chinese_font():
+    # 智能查找可用的中日文字体
+    def find_cjk_font():
         font_candidates = [
+            # 中文字体
             'Microsoft YaHei', 'SimHei', 'WenQuanYi Micro Hei',
             'WenQuanYi Zen Hei', 'Noto Sans CJK SC', 'Noto Sans SC',
-            'PingFang SC', 'Hiragino Sans GB', 'Heiti TC', 'Arial Unicode MS'
+            'PingFang SC', 'Hiragino Sans GB', 'Heiti TC',
+            # 日文字体
+            'Noto Sans CJK JP', 'Noto Sans JP',
+            'Meiryo', 'MS Gothic', 'MS PGothic', 'Hiragino Kaku Gothic Pro',
+            'Hiragino Mincho Pro', 'Osaka',
+            # 通用字体
+            'Noto Sans CJK', 'Noto Sans',
+            'Arial Unicode MS', 'DejaVu Sans'
         ]
         system_fonts = [f.name for f in fm.fontManager.ttflist]
         for font in font_candidates:
@@ -74,11 +82,11 @@ def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right:
                 return font
         return None
     
-    chinese_font = find_chinese_font()
-    if chinese_font:
-        plt.rcParams['font.sans-serif'] = [chinese_font]
+    cjk_font = find_cjk_font()
+    if cjk_font:
+        plt.rcParams['font.sans-serif'] = [cjk_font]
     else:
-        # 如果没有中文字体，尽量用默认，至少保证不报错
+        # 如果没有中日文字体，尽量用默认，至少保证不报错
         plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'sans-serif']
     plt.rcParams['axes.unicode_minus'] = False
     

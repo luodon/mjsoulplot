@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
-# Render 构建脚本：安装中文字体
+# Render 构建脚本：安装中日文字体
 
 set -e
 
-echo "=== 安装中文字体 ==="
+echo "=== 安装中日文字体 ==="
 
 # 更新包列表
 apt-get update
 
-# 安装中文字体
+# 安装中日文字体
 apt-get install -y --no-install-recommends \
     fonts-wqy-microhei \
     fonts-wqy-zenhei \
-    fonts-noto-cjk
+    fonts-noto-cjk \
+    fonts-noto-cjk-extra
 
 # 清理缓存
 apt-get clean
