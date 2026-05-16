@@ -1,25 +1,12 @@
 #!/usr/bin/env bash
-# Render 构建脚本：安装中日文字体
+# Render 构建脚本：安装依赖并配置中日文字体
 
 set -e
 
-echo "=== 安装中日文字体 ==="
-
-# 更新包列表
-apt-get update
-
-# 安装中日文字体
-apt-get install -y --no-install-recommends \
-    fonts-wqy-microhei \
-    fonts-wqy-zenhei \
-    fonts-noto-cjk \
-    fonts-noto-cjk-extra
-
-# 清理缓存
-apt-get clean
-rm -rf /var/lib/apt/lists/*
-
-echo "=== 字体安装完成 ==="
-
-# 继续执行 pip 安装
+echo "=== 安装依赖 ==="
 pip install -r requirements.txt
+
+echo "=== 初始化 mplfonts 中日文字体 ==="
+mplfonts init
+
+echo "=== 构建完成 ==="

@@ -60,34 +60,32 @@ def get_rank(player_list, target_account_id):
     sorted_ids = [player['accountId'] for player in sorted_list]
     return sorted_ids.index(target_account_id) + 1
 
-def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right: int = 10000, top: int = 10000):
-    # 智能查找可用的中日文字体
-    def find_cjk_font():
-        font_candidates = [
-            # 中文字体
-            'Microsoft YaHei', 'SimHei', 'WenQuanYi Micro Hei',
-            'WenQuanYi Zen Hei', 'Noto Sans CJK SC', 'Noto Sans SC',
-            'PingFang SC', 'Hiragino Sans GB', 'Heiti TC',
-            # 日文字体
-            'Noto Sans CJK JP', 'Noto Sans JP',
-            'Meiryo', 'MS Gothic', 'MS PGothic', 'Hiragino Kaku Gothic Pro',
-            'Hiragino Mincho Pro', 'Osaka',
-            # 通用字体
-            'Noto Sans CJK', 'Noto Sans',
-            'Arial Unicode MS', 'DejaVu Sans'
-        ]
-        system_fonts = [f.name for f in fm.fontManager.ttflist]
-        for font in font_candidates:
-            if font in system_fonts:
-                return font
-        return None
-    
-    cjk_font = find_cjk_font()
-    if cjk_font:
-        plt.rcParams['font.sans-serif'] = [cjk_font]
-    else:
-        # 如果没有中日文字体，尽量用默认，至少保证不报错
+def _setup_cjk_font():
+    try:
+        from mplfonts import use_font
+        use_font('Noto Sans CJK SC')
+    except Exception:
+        try:
+            system_fonts = [f.name for f in fm.fontManager.ttflist]
+            font_candidates = [
+                'Microsoft YaHei', 'SimHei', 'WenQuanYi Micro Hei',
+                'WenQuanYi Zen Hei', 'Noto Sans CJK SC', 'Noto Sans SC',
+                'Noto Sans CJK JP', 'Noto Sans JP',
+                'PingFang SC', 'Hiragino Sans GB',
+                'Meiryo', 'MS Gothic',
+                'DejaVu Sans'
+            ]
+            for font in font_candidates:
+                if font in system_fonts:
+                    plt.rcParams['font.sans-serif'] = [font]
+                    return
+        except Exception:
+            pass
         plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'sans-serif']
+
+
+def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right: int = 10000, top: int = 10000):
+    _setup_cjk_font()
     plt.rcParams['axes.unicode_minus'] = False
     
     if mode_arg == "3p":
