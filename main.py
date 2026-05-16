@@ -14,7 +14,7 @@ async def root():
 
 @app.get("/api/generate")
 async def generate(
-    player_name: str = Query("お高"),
+    player_name: str = Query(""),
     mode: str = Query("4p"),
     left: int = Query(0),
     right: int = Query(10000),

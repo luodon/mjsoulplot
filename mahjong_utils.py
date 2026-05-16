@@ -204,7 +204,7 @@ def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right:
 
 if __name__ == "__main__":
     import sys
-    PLAYER_NAME = sys.argv[1] if len(sys.argv) > 1 else "お高"
+    PLAYER_NAME = sys.argv[1] if len(sys.argv) > 1 else ""
     MODE_ARG = sys.argv[2] if len(sys.argv) > 2 else "4p"
     LEFT = int(sys.argv[3]) if len(sys.argv) > 3 else 0
     RIGHT = int(sys.argv[4]) if len(sys.argv) > 4 else 10000
