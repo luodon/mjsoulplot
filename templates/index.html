@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雀魂 PT 推移图查询</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .main-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .player-name-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .advanced-toggle {
+            background: #e9ecef;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            color: #495057;
+            display: block;
+            margin: 0 auto;
+        }
+        .advanced-toggle:hover {
+            background: #dee2e6;
+        }
+        .advanced-options {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+        .advanced-options.active {
+            display: block;
+        }
+        .advanced-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .image-section {
+            text-align: center;
+            margin-bottom: 30px;
+            display: none;
+        }
+        .image-section.active {
+            display: block;
+        }
+        .image-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .table-section {
+            display: none;
+        }
+        .table-section.active {
+            display: block;
+        }
+        .table-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        .loading.active {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .error.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>雀魂 PT 推移图查询</h1>
+        </div>
+        <div class="content">
+            <div class="form-section">
+                <div class="main-row">
+                    <div class="form-group player-name-group">
+                        <label for="playerName">玩家名</label>
+                        <input type="text" id="playerName" value="お高" placeholder="输入玩家名">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn" id="query4p" onclick="generateGraph('4p')">四麻</button>
+                        <button class="btn" id="query3p" onclick="generateGraph('3p')">三麻</button>
+                    </div>
+                </div>
+                
+                <button class="advanced-toggle" onclick="toggleAdvanced()">显示绘图设置</button>
+                
+                <div class="advanced-options" id="advancedOptions">
+                    <div class="advanced-grid">
+                        <div class="form-group">
+                            <label for="left">左端（开始对局）</label>
+                            <input type="number" id="left" value="0" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="right">右端（结束对局）</label>
+                            <input type="number" id="right" value="10000" placeholder="10000">
+                        </div>
+                        <div class="form-group">
+                            <label for="top">PT上限</label>
+                            <input type="number" id="top" value="10000" placeholder="10000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="error" id="error"></div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在获取数据并生成图表...</p>
+            </div>
+            <div class="image-section" id="imageSection">
+                <img id="graphImage" alt="PT 推移图">
+            </div>
+            <div class="table-section" id="tableSection">
+                <h2>段位战历史</h2>
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>段位</th>
+                            <th>开始日期</th>
+                            <th>结束日期</th>
+                            <th>天数</th>
+                            <th>对局数</th>
+                            <th>1位</th>
+                            <th>2位</th>
+                            <th>3位</th>
+                            <th>4位</th>
+                            <th>平均排名</th>
+                            <th>最高PT</th>
+                            <th>最低PT</th>
+                            <th>场次类型</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleAdvanced() {
+            const options = document.getElementById('advancedOptions');
+            const btn = document.querySelector('.advanced-toggle');
+            if (options.classList.contains('active')) {
+                options.classList.remove('active');
+                btn.textContent = '显示绘图设置';
+            } else {
+                options.classList.add('active');
+                btn.textContent = '隐藏绘图设置';
+            }
+        }
+
+        async function generateGraph(mode) {
+            const playerName = document.getElementById('playerName').value.trim();
+            const left = parseInt(document.getElementById('left').value);
+            const right = parseInt(document.getElementById('right').value);
+            const top = document.getElementById('top').value;
+
+            const btn4p = document.getElementById('query4p');
+            const btn3p = document.getElementById('query3p');
+            const loading = document.getElementById('loading');
+            const imageSection = document.getElementById('imageSection');
+            const tableSection = document.getElementById('tableSection');
+            const error = document.getElementById('error');
+
+            if (!playerName) {
+                error.textContent = '请输入玩家名！';
+                error.classList.add('active');
+                return;
+            }
+
+            if (right - left < 10) {
+                error.textContent = '右端必须比左端至少大10！';
+                error.classList.add('active');
+                return;
+            }
+
+            btn4p.disabled = true;
+            btn3p.disabled = true;
+            error.classList.remove('active');
+            loading.classList.add('active');
+            imageSection.classList.remove('active');
+            tableSection.classList.remove('active');
+
+            try {
+                const response = await fetch(`/api/generate?player_name=${encodeURIComponent(playerName)}&mode=${mode}&left=${left}&right=${right}&top=${top}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('graphImage').src = `data:image/png;base64,${data.image}`;
+                    imageSection.classList.add('active');
+
+                    const tbody = document.getElementById('historyTableBody');
+                    tbody.innerHTML = '';
+                    data.history.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${row.level}</td>
+                            <td>${row.start_date}</td>
+                            <td>${row.end_date}</td>
+                            <td>${row.days}</td>
+                            <td>${row.games}</td>
+                            <td>${row.rank1}</td>
+                            <td>${row.rank2}</td>
+                            <td>${row.rank3}</td>
+                            <td>${row.rank4}</td>
+                            <td>${row.avg_rank}</td>
+                            <td>${row.max_pt}</td>
+                            <td>${row.min_pt}</td>
+                            <td>${row.mode_types}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    tableSection.classList.add('active');
+                } else {
+                    error.textContent = data.error || '生成图表失败，请检查玩家名是否正确';
+                    error.classList.add('active');
+                }
+            } catch (err) {
+                error.textContent = '网络错误：' + err.message;
+                error.classList.add('active');
+            } finally {
+                btn4p.disabled = false;
+                btn3p.disabled = false;
+                loading.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

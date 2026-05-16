@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: mjsoul-pt-plot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    autoDeploy: true
+    repo: https://github.com/你的用户名/你的仓库名  # 后续填写你的仓库地址
+    branch: main
