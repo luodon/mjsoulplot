@@ -2,6 +2,7 @@ import requests
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import time
 import warnings
 import sys
@@ -60,6 +61,27 @@ def get_rank(player_list, target_account_id):
     return sorted_ids.index(target_account_id) + 1
 
 def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right: int = 10000, top: int = 10000):
+    # 智能查找可用的中文字体
+    def find_chinese_font():
+        font_candidates = [
+            'Microsoft YaHei', 'SimHei', 'WenQuanYi Micro Hei',
+            'WenQuanYi Zen Hei', 'Noto Sans CJK SC', 'Noto Sans SC',
+            'PingFang SC', 'Hiragino Sans GB', 'Heiti TC', 'Arial Unicode MS'
+        ]
+        system_fonts = [f.name for f in fm.fontManager.ttflist]
+        for font in font_candidates:
+            if font in system_fonts:
+                return font
+        return None
+    
+    chinese_font = find_chinese_font()
+    if chinese_font:
+        plt.rcParams['font.sans-serif'] = [chinese_font]
+    else:
+        # 如果没有中文字体，尽量用默认，至少保证不报错
+        plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'sans-serif']
+    plt.rcParams['axes.unicode_minus'] = False
+    
     if mode_arg == "3p":
         API_BASE = "https://5-data.amae-koromo.com/api/v2/pl3/"
         MODE = "26,24,22,25,23,21"
@@ -111,8 +133,6 @@ def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right:
                             max_base = base
         top = max_base * 2
 
-    plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'MingLiU']
-    plt.rcParams['axes.unicode_minus'] = False
     plt.figure(facecolor='w', figsize=(16, 10))
 
     if left == 0:
