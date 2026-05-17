@@ -2,8 +2,23 @@ from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
 from pathlib import Path
 from mahjong_utils import generate_graph
+import asyncio
+import threading
 
 app = FastAPI(title="雀魂 PT 推移图")
+
+@app.on_event("startup")
+async def warmup():
+    async def _warm():
+        await asyncio.sleep(0)
+        def _do_import():
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+            import matplotlib.font_manager as fm
+            import numpy as np
+        threading.Thread(target=_do_import, daemon=True).start()
+    asyncio.create_task(_warm())
 
 @app.get("/", response_class=HTMLResponse)
 async def root():

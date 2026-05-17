@@ -1,17 +1,14 @@
 import requests
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
 from pathlib import Path
 import time
 import warnings
 import sys
-import numpy as np
 from collections import Counter
 import datetime
 import io
 import base64
+
+# matplotlib 和 numpy 在 generate_graph 内部懒导入，加快冷启动速度
 
 warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 
@@ -64,6 +61,8 @@ def get_rank(player_list, target_account_id):
 FONT_PATH = Path(__file__).parent / "NotoSansSC-Regular.otf"
 
 def _setup_cjk_font():
+    import matplotlib.font_manager as fm
+    import matplotlib.pyplot as plt
     if FONT_PATH.exists():
         fm.fontManager.addfont(str(FONT_PATH))
         font_prop = fm.FontProperties(fname=str(FONT_PATH))
@@ -87,6 +86,11 @@ def _setup_cjk_font():
 
 
 def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right: int = 10000, top: int = 10000):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import matplotlib.font_manager as fm
+    import numpy as np
     _setup_cjk_font()
     plt.rcParams['axes.unicode_minus'] = False
     
