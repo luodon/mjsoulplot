@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from pathlib import Path
 from mahjong_utils import generate_graph
 import asyncio
@@ -26,6 +26,13 @@ async def root():
     if html_path.exists():
         return html_path.read_text(encoding="utf-8")
     return HTMLResponse(content="<h1>模板文件不存在</h1>", status_code=500)
+
+@app.get("/favicon.ico")
+async def favicon():
+    svg_path = Path("1s.svg")
+    if svg_path.exists():
+        return FileResponse(svg_path, media_type="image/svg+xml")
+    return HTMLResponse(status_code=204)
 
 @app.get("/api/generate")
 async def generate(
