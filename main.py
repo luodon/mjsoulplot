@@ -4,6 +4,13 @@ from pathlib import Path
 from mahjong_utils import generate_graph
 import asyncio
 import threading
+import os
+import sys
+
+def _resource_path(relative_path):
+    if getattr(sys, 'frozen', False):
+        return Path(sys._MEIPASS) / relative_path
+    return Path(__file__).parent / relative_path
 
 app = FastAPI(title="雀魂 PT 推移图")
 
@@ -22,14 +29,14 @@ async def warmup():
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    html_path = Path("templates/index.html")
+    html_path = _resource_path("templates/index.html")
     if html_path.exists():
         return html_path.read_text(encoding="utf-8")
     return HTMLResponse(content="<h1>模板文件不存在</h1>", status_code=500)
 
 @app.get("/favicon.ico")
 async def favicon():
-    svg_path = Path("1s.svg")
+    svg_path = _resource_path("1s.svg")
     if svg_path.exists():
         return FileResponse(svg_path, media_type="image/svg+xml")
     return HTMLResponse(status_code=204)

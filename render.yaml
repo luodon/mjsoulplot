@@ -1,8 +1,9 @@
 services:
   - type: web
     name: mjsoul-pt-plot
-    env: docker
-    dockerfilePath: ./Dockerfile
+    env: python
+    buildCommand: bash compile.sh
+    startCommand: ./dist/main/main
     plan: free
     autoDeploy: true
     repo: https://github.com/你的用户名/你的仓库名

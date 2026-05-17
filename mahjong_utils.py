@@ -58,7 +58,12 @@ def get_rank(player_list, target_account_id):
     sorted_ids = [player['accountId'] for player in sorted_list]
     return sorted_ids.index(target_account_id) + 1
 
-FONT_PATH = Path(__file__).parent / "NotoSansSC-Regular.otf"
+def _resource_path(relative_path):
+    if getattr(sys, 'frozen', False):
+        return Path(sys._MEIPASS) / relative_path
+    return Path(__file__).parent / relative_path
+
+FONT_PATH = _resource_path("NotoSansSC-Regular.otf")
 
 def _setup_cjk_font():
     import matplotlib.font_manager as fm
