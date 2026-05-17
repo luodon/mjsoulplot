@@ -2,9 +2,11 @@ services:
   - type: web
     name: mjsoul-pt-plot
     env: python
-    buildCommand: bash compile.sh
+    buildCommand: |
+      curl -L "https://github.com/luodon/mjsoulplot/releases/latest/download/binary.tar.gz" -o binary.tar.gz && \
+      mkdir -p dist && tar xzf binary.tar.gz -C dist
     startCommand: ./dist/main/main
     plan: free
     autoDeploy: true
-    repo: https://github.com/你的用户名/你的仓库名
+    repo: https://github.com/luodon/mjsoulplot
     branch: main
