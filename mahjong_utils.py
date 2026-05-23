@@ -42,10 +42,10 @@ def get_level_color(level):
         idx = 0
     return colors[idx] if idx < len(colors) else colors[0]
 
-maid_to_ma = {16: '4王南', 12: '4玉南', 9: '4金南',
-               15: '4王东', 11: '4玉东', 8: '4金东',
-               26: '3王南', 24: '3玉南', 22: '3金南',
-               25: '3王东', 23: '3玉东', 21: '3金东'}
+maid_to_ma = {16: '王南', 12: '玉南', 9: '金南',
+               15: '王东', 11: '玉东', 8: '金东',
+               26: '王南', 24: '玉南', 22: '金南',
+               25: '王东', 23: '玉东', 21: '金东'}
 
 def level_dan(level):
     return f"{DAN[level // 100 % 100 - 2]}{level % 100}"
@@ -98,13 +98,13 @@ def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right:
         API_BASE = "https://5-data.amae-koromo.com/api/v2/pl3/"
         MODE = "26,24,22,25,23,21"
         COLOR = {26: 'r', 25: 'r', 24: 'g', 23: 'g', 22: 'y', 21: 'y'}
-        MODE_NAME = "3麻"
+        MODE_NAME = "三麻"
         pre_level = 20301
     else:
         API_BASE = "https://5-data.amae-koromo.com/api/v2/pl4/"
         MODE = "16,15,12,11,9,8"
         COLOR = {16: 'r', 15: 'r', 12: 'g', 11: 'g', 9: 'y', 8: 'y'}
-        MODE_NAME = "4麻"
+        MODE_NAME = "四麻"
         pre_level = 10301
 
     try:
@@ -143,31 +143,47 @@ def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right:
                         base = level_pt_base(level)
                         if base > max_base:
                             max_base = base
-        top = max_base * 2
+        top = max_base
+        bottom = -max_base
+    else:
+        bottom = -top
 
-    plt.figure(facecolor='w', figsize=(16, 10))
-
-    if left == 0:
-        plt.text(3, 100, f'杰\n1', fontsize=15)
+    fig, ax = plt.subplots(figsize=(16, 10), facecolor='#1a1a1a')
+    ax.set_facecolor('#1a1a1a')
+    ax.spines['bottom'].set_color('#888888')
+    ax.spines['top'].set_color('#888888')
+    ax.spines['left'].set_color('#888888')
+    ax.spines['right'].set_color('#888888')
+    ax.tick_params(colors='#cccccc')
+    ax.xaxis.label.set_color('#cccccc')
+    ax.yaxis.label.set_color('#cccccc')
+    ax.title.set_color('#ffffff')
 
     pre_pt, pt, base = 600, 600, 600
     hist = []
     temp_hist = []
+    level_changes = {}
+    pt_segments = []
+    current_segment_x = []
+    current_segment_y = []
+    current_segment_level = pre_level
 
     for i, game in enumerate(games[::-1]):
         for data in game['players']:
             if data['accountId'] == pid:
                 level = data['level']
                 if pre_level != level:
+                    if current_segment_x:
+                        pt_segments.append((current_segment_x.copy(), current_segment_y.copy(), level_dan(current_segment_level), current_segment_level))
                     if temp_hist:
                         hist.append(temp_hist)
                     temp_hist = []
+                    current_segment_x = []
+                    current_segment_y = []
                     base = level_pt_base(level)
                     pt = pre_pt = base
-                    if left <= i <= right:
-                        s = level_dan(level)
-                        plt.text(i+3, 100, f'{s[0]}\n{s[1:]}', fontsize=15)
-                        plt.vlines(i, 0, max(level_pt_base(level), level_pt_base(pre_level))*2, color='k')
+                    current_segment_level = level
+                    level_changes[i] = level
                 pt += data['gradingScore'] * 5 if level // 100 % 100 >= 7 else data['gradingScore']
                 rank = get_rank(game['players'], pid)
                 dt1 = datetime.datetime.fromtimestamp(game['startTime'])
@@ -176,24 +192,44 @@ def generate_graph(player_name: str, mode_arg: str = "4p", left: int = 0, right:
                 gdata = (i, dt1, dt2, maid_to_ma[ma], level_dan(pre_level), level_dan(level), rank, pre_pt, pt)
                 temp_hist.append(gdata)
                 if left <= i <= right:
-                    level_color = get_level_color(level)
-                    plt.plot([i, i+1], [pre_pt, pt], color='k', lw=1.5)
-                    plt.fill_between([i, i+1], [pre_pt, pt], color=level_color, alpha=0.3)
-                    plt.plot([i, i+1], [base, base], color='k', lw=1.5)
-                    plt.plot([i, i+1], [base*2, base*2], color='k', lw=1.5)
+                    current_segment_x.append(i + 1)
+                    current_segment_y.append(pt)
                 pre_level, pre_pt = level, pt
                 break
+
+    if current_segment_x:
+        pt_segments.append((current_segment_x, current_segment_y, level_dan(current_segment_level), current_segment_level))
 
     if temp_hist:
         hist.append(temp_hist)
 
-    plt.title(f'雀魂PT推移图[{MODE_NAME}]({player_name})', fontsize=30)
-    plt.xlabel('对局数', fontsize=20)
-    plt.ylabel('PT', fontsize=20)
-    plt.xticks(fontsize=20)
-    plt.yticks([i*1000 for i in range(11)], fontsize=20)
-    plt.xlim([left, min(right, len(games))])
-    plt.ylim([0, top+100])
+    bar_width = 0.8
+    for seg_x, seg_y, dan_str, seg_level in pt_segments:
+        filtered_x = [x for x in seg_x if left <= x <= right]
+        seg_base = level_pt_base(seg_level)
+        filtered_y = []
+        for x in filtered_x:
+            idx = seg_x.index(x)
+            filtered_y.append(seg_y[idx] - seg_base)
+        if filtered_x:
+            color = get_level_color(seg_level)
+            ax.bar(filtered_x, filtered_y, width=bar_width, color=color, edgecolor=color, alpha=0.8)
+            mid_x = (filtered_x[0] + filtered_x[-1]) / 2
+            ax.text(mid_x, bottom + 50, dan_str, fontsize=14, ha='center', color=color)
+
+    for idx, dan_level in level_changes.items():
+        if left <= idx <= right:
+            change_base = level_pt_base(dan_level)
+            ax.axvline(x=idx + 1, ymin=0.5 - change_base/(top-bottom), ymax=0.5 + change_base/(top-bottom), color='#888888', linestyle=':', linewidth=1)
+
+    ax.axhline(y=0, color='gray', linestyle='--', linewidth=1)
+
+    ax.set_title(f'雀魂PT推移图[{MODE_NAME}]({player_name})', fontsize=24)
+    ax.set_xlabel('对局数', fontsize=16)
+    ax.set_ylabel('PT (相对base)', fontsize=16)
+    ax.set_xlim(left, min(right, len(games)))
+    ax.set_ylim(bottom - 50, top + 50)
+    ax.grid(True, alpha=0.3, axis='y', color='#444444')
     plt.tight_layout()
 
     img_buffer = io.BytesIO()
